@@ -1,0 +1,124 @@
+@startuml diagrama-casos-de-uso
+' =====================================================================
+' Ferramenta de Avaliacao Institucional das EMEFs de Canoas
+' Diagrama de Casos de Uso - v0.1
+' =====================================================================
+
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+
+skinparam actor {
+  BorderColor #1F1F1F
+  BackgroundColor #FFFFFF
+}
+skinparam usecase {
+  BorderColor #5A5A5A
+  BackgroundColor #FFFFFF
+  BorderColor<<interno>> #A08070
+  BackgroundColor<<interno>> #F7F4F0
+}
+skinparam rectangle {
+  BorderColor #8A8A8A
+}
+skinparam arrow {
+  Color #6B6B6B
+}
+
+' ---------------------------------------------------------------------
+' ATORES
+' ---------------------------------------------------------------------
+actor "Estudante" as EST
+actor "Profissional\nda Educacao" as PROF
+actor "Administrador\nSME" as ADM
+actor "Gestor Escolar" as GES
+
+' ---------------------------------------------------------------------
+' FRONTEIRA DO SISTEMA
+' ---------------------------------------------------------------------
+rectangle "Sistema de Avaliacao Institucional das EMEFs de Canoas" {
+
+  ' --- Coleta ---
+  usecase "Autenticar com\ne-mail academico"        as UC01
+  usecase "Selecionar vinculo\na avaliar"           as UC02
+  usecase "Responder instrumento"                   as UC03
+  usecase "Enviar resposta\nanonimizada"            as UC04
+  usecase "Gravar atributos\nde recorte"            as UC05 <<interno>>
+  usecase "Marcar vinculo como\nrespondido (em lote)\n<<system>>" as UC06
+
+  ' --- Gestao ---
+  usecase "Gerenciar escolas\ne regioes"            as UC07
+  usecase "Gerenciar edicoes\ne instrumentos"       as UC08
+  usecase "Importar lista\nde elegiveis"            as UC09
+  usecase "Acompanhar adesao"                       as UC10
+
+  ' --- Relatorios ---
+  usecase "Consultar relatorio\ndo grupo"           as UC11
+  usecase "Filtrar por escola, ano,\nmarcador e regiao" as UC12
+  usecase "Exportar PDF / CSV"                      as UC13
+  usecase "Suprimir recorte com\namostra insuficiente" as UC14 <<interno>>
+}
+
+' ---------------------------------------------------------------------
+' ASSOCIACOES
+' ---------------------------------------------------------------------
+EST  -- UC01
+EST  -- UC03
+
+PROF -- UC01
+PROF -- UC02
+PROF -- UC03
+
+ADM  -- UC07
+ADM  -- UC08
+ADM  -- UC09
+ADM  -- UC10
+ADM  -- UC11
+
+GES  -- UC10
+GES  -- UC11
+
+' ---------------------------------------------------------------------
+' DEPENDENCIAS
+' ---------------------------------------------------------------------
+UC03 ..> UC04 : <<include>>
+UC04 ..> UC05 : <<include>>
+UC11 ..> UC14 : <<include>>
+
+UC12 ..> UC11 : <<extend>>
+UC13 ..> UC11 : <<extend>>
+
+' ---------------------------------------------------------------------
+' NOTAS DE PROJETO
+' ---------------------------------------------------------------------
+note bottom of UC05
+  RF-19: escola, ano escolar, marcadores
+  sociais, bairro e quadrante sao copiados
+  para dentro da resposta no momento do envio.
+  Nenhuma chave estrangeira liga a resposta
+  ao registro de elegibilidade (RF-18).
+end note
+
+note bottom of UC06
+  RF-21: executado em lote, desacoplado
+  do envio. Evita que a correlacao temporal
+  entre gravacao e mudanca de status
+  reidentifique o respondente.
+end note
+
+note bottom of UC14
+  RF-25: recortes abaixo do limite minimo
+  de respondentes exibem "amostra
+  insuficiente" em vez do resultado.
+end note
+
+note right of UC02
+  RF-08: a elegibilidade e por par
+  (pessoa, escola). O profissional
+  possui um vinculo independente
+  para cada escola em que atua.
+end note
+
+@enduml
